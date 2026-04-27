@@ -1,4 +1,13 @@
 print("Server script initialized")
+local MAX_SLOTS = 18
+
+local function createInventory()
+    local inv = {}
+    for i = 1, MAX_SLOTS do
+        inv[i] = false
+    end
+    return inv
+end
 
 local Items = {
     ak47 = {
@@ -18,7 +27,7 @@ local Items = {
 
 local playerData = {
     money = 50000,
-    inventory = {}
+    inventory = createInventory()
 }
 
 local function addMoney(playerID, amount)
@@ -52,38 +61,39 @@ end
 
 local function addItem(playerID, itemName)
     local inventory = playerData[playerID].inventory
-
-    if not inventory then return end
-
     local itemData = Items[itemName]
-    if not itemData then
-        print("Invalid Item")
-        return
-    end
 
-    -- Not stackable
-    if not itemData.stackable then
-        table.insert(inventory, {
-            name = itemName,
-            amount = 1
-        })
-        return
-    end
+    if not itemData then return false end
 
-    -- Search stack
-    for _, item in pairs(inventory) do
-        if item.name == itemName and (item.amount or 1) < itemData.maxStack then
-            item.amount = (item.amount or 1) + 1
-            return
+    local firstEmptySlot = nil
+
+    for i = 1, MAX_SLOTS do
+        local slot = inventory[i]
+
+        if not slot and not firstEmptySlot then
+            firstEmptySlot = i
+        end
+
+
+        if slot then
+            if slot.name == itemName and itemData.stackable then
+                if slot.amount < itemData.maxStack then
+                    slot.amount += 1
+                    return true
+                end
+            end
         end
     end
 
-    -- Create new stack
-    table.insert(inventory, {
-        name = itemName,
-        amount = 1
-    })
+    if firstEmptySlot then
+        inventory[firstEmptySlot] = { name = itemName, amount = 1 }
+        return true
+    else
+        return false
+    end
+
 end
+
 
 RegisterCommand("add", function(source, args)
     local amount = tonumber(args[1])
@@ -118,7 +128,8 @@ RegisterCommand("init", function (source)
     local playerID = GetPlayerIdentifierByType(source, "license")
     playerData[playerID] = {
     money = 50000,
-    inventory = {}
+    inventory = createInventory()
+
 }
 
 end)
@@ -133,7 +144,6 @@ AddEventHandler("inventory:requestOpen", function()
     TriggerClientEvent("inventory:open", source, inventory)
 end)
 
-
 AddEventHandler('playerJoining', function()
     local playerID = GetPlayerIdentifierByType(source, "license")
     local result = MySQL.query.await("SELECT * FROM players WHERE identifier = ?", {playerID})
@@ -142,12 +152,14 @@ AddEventHandler('playerJoining', function()
     if #result == 0 then
         playerData[playerID] = {
             money = 50000,
-            inventory = {}
+            inventory = createInventory()
         }
         MySQL.query.await("INSERT INTO players (identifier, money, inventory) VALUES (?, ?, ?)", {playerID, playerData[playerID].money, json.encode(playerData[playerID].inventory)})
     else
-        playerData[playerID].money = result[1].money
-        playerData[playerID].inventory = json.decode(result[1].inventory)
+        playerData[playerID] = {
+            money = result[1].money,
+            inventory = json.decode(result[1].inventory)
+        }
     end
 end)
 
@@ -156,7 +168,6 @@ AddEventHandler('playerDropped', function()
     print("PLAYER DISCONNECTING: " .. playerID)
 
     if not playerData[playerID].money or not playerData[playerID].inventory then return end
-
 
     MySQL.query.await("UPDATE players SET money = ?, inventory = ? WHERE identifier = ?", {playerData[playerID].money, json.encode(playerData[playerID].inventory), playerID})
     playerData[playerID].money = nil
@@ -190,10 +201,15 @@ AddEventHandler("shop:buyItem", function(itemName)
         return
     end
 
+    if not addItem(playerID, itemName) then
+        TriggerClientEvent("notify", src, "You do not have enough space")
+        return
+    end
+
     removeMoney(playerID, price)
-    addItem(playerID, itemName)
     TriggerClientEvent("notify", src, "You have bought " .. itemName .. " for $" .. price)
     TriggerClientEvent("notify", src, "Current balance: " .. playerData[playerID].money)
+
 end)
 
 RegisterNetEvent("inventory:useItem")
