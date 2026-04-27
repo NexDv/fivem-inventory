@@ -10,6 +10,7 @@ A simple but functional inventory system for FiveM servers, built from scratch w
 - Stackable and non-stackable items
 - Basic NUI inventory interface (open with `I`)
 - MySQL persistence on connect/disconnect
+- Periodic Data Base autosave for data security
 
 ## Dependencies
 
@@ -35,8 +36,8 @@ A simple but functional inventory system for FiveM servers, built from scratch w
 
 | Command | Description |
 |--------|-------------|
-| `/comprar [item]` | Purchase an item |
-| `/usar [item]` | Use an item by name |
+| `/buy [item]` | Purchase an item |
+| `/use [item]` | Use an item by name |
 | `I` | Open / close the inventory UI |
 
 ## Available Items
