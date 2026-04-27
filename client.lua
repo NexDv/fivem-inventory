@@ -1,22 +1,21 @@
----@diagnostic disable: missing-parameter
-print("Client script iniciado")
+print("Client script initialized")
 
-RegisterCommand("comprar", function(source, args)
+RegisterCommand("buy", function(source, args)
     local itemName = args[1]
 
     if not itemName then
-        print("Uso: /comprar [item]")
+        print("Command: /buy [item]")
         return
     end
 
     TriggerServerEvent("shop:buyItem", itemName)
 end)
 
-RegisterCommand("usar", function(source, args)
+RegisterCommand("use", function(source, args)
     local itemName = args[1]
 
     if not itemName then
-        print("Uso: /usar [item]")
+        print("Command: /use [item]")
         return
     end
 
@@ -54,12 +53,12 @@ RegisterCommand("toggleinv", function()
     end
 end, false)
 
-RegisterKeyMapping("toggleinv", "Abrir Inventario", "keyboard", "i")
+RegisterKeyMapping("toggleinv", "Open Inventory", "keyboard", "i")
 
 RegisterNUICallback("close", function(data, cb)
     SetNuiFocus(false, false)
 
-    inventoryOpen = false -- 👈 CLAVE
+    inventoryOpen = false
 
     SendNUIMessage({
         type = "close"

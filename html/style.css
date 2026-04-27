@@ -1,13 +1,12 @@
 body {
     margin: 0;
     padding: 0;
-    display: none; /* importante */
+    display: none;
     background: rgba(0, 0, 0, 0.7);
     font-family: Arial, sans-serif;
     color: white;
 }
 
-/* Contenedor principal */
 #inventory-container {
     position: absolute;
     top: 50%;
@@ -29,7 +28,7 @@ body {
     align-items: center;
 }
 
-/* Botón cerrar */
+/* Close buttom */
 #closeBtn {
     background: rgb(255, 0, 0);
     border: none;
@@ -62,13 +61,11 @@ body {
     position: relative; /* 👈 CLAVE */
 }
 
-/* Texto item */
 .item-name {
     font-size: 14px;
     text-align: center;
 }
 
-/* Cantidad */
 .item-amount {
     position: absolute;
     bottom: 5px;

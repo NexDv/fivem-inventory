@@ -1,4 +1,4 @@
-print("Server script iniciado")
+print("Server script initialized")
 
 local Items = {
     ak47 = {
@@ -23,13 +23,13 @@ local function addMoney(playerID, amount)
     if playerID and playerMoney[playerID] then
         if amount > 0 then
             playerMoney[playerID] += amount
-            print("El jugador " .. playerID .. " recibió $" .. amount)
-            print("Ahora tiene " .. playerMoney[playerID])
+            print("Player got $" .. amount)
+            print("Updated amount of money: " .. playerMoney[playerID])
         else
-            print("El dinero debe ser positivo")
+            print("Money must be positive")
         end
     else
-        print("El jugador no existe o no tiene dinero") 
+        print("Player does not exit or has not money initialized")
     end
 end
 
@@ -38,13 +38,13 @@ local function removeMoney(playerID, amount)
         if amount > 0 then
             playerMoney[playerID] -= amount
             playerMoney[playerID] = math.max(0,playerMoney[playerID])
-            print("El jugador " .. playerID .. " perdió $" .. amount)
-            print("Ahora tiene " .. playerMoney[playerID])
+            print("Player lost $" .. amount)
+            print("Updated amount of money: " .. playerMoney[playerID])
         else
-            print("El dinero debe ser positivo")
+            print("Money must be positive")
         end
     else
-        print("El jugador no existe o no tiene dinero") 
+        print("Player does not exit or has not money initialized")
     end
 end
 
@@ -55,11 +55,11 @@ local function addItem(playerID, itemName)
 
     local itemData = Items[itemName]
     if not itemData then
-        print("Item inválido")
+        print("Invalid Item")
         return
     end
 
-    -- Si NO es stackable
+    -- Not stackable
     if not itemData.stackable then
         table.insert(inventory, {
             name = itemName,
@@ -68,7 +68,7 @@ local function addItem(playerID, itemName)
         return
     end
 
-    -- Buscar stack existente
+    -- Search stack
     for _, item in pairs(inventory) do
         if item.name == itemName and (item.amount or 1) < itemData.maxStack then
             item.amount = (item.amount or 1) + 1
@@ -76,7 +76,7 @@ local function addItem(playerID, itemName)
         end
     end
 
-    -- Crear nuevo stack
+    -- Create new stack
     table.insert(inventory, {
         name = itemName,
         amount = 1
@@ -97,13 +97,13 @@ RegisterCommand("inv", function(source)
     local playerID = GetPlayerIdentifierByType(source, "license")
     local inventory = playerInventory[playerID]
 
-    if not inventory then print ("Inventario no inicializado") return end
+    if not inventory then print ("Inventory not initialized") return end
 
     print("====================")
-    print(" INVENTARIO || DINERO: " .. playerMoney[playerID])
+    print(" INVENTORY || MONEY: " .. playerMoney[playerID])
     print("====================")
 
-    if #inventory == 0 then print("Inventario vacio")
+    if #inventory == 0 then print("Empty Inventory")
         else
     	    for i, item in ipairs(inventory) do
 			    print(i .. ". " .. item.name .. " x" .. item.amount)
@@ -142,10 +142,12 @@ AddEventHandler('playerDropped', function()
     local playerID = GetPlayerIdentifierByType(source, "license")
     print("PLAYER DISCONNECTING: " .. playerID)
 
+    if not playerMoney[playerID] then return end
+
+
     MySQL.query.await("UPDATE players SET money = ?, inventory = ? WHERE identifier = ?", {playerMoney[playerID], json.encode(playerInventory[playerID]), playerID})
     playerMoney[playerID] = nil
     playerInventory[playerID] = nil
-
 end)
 
 RegisterNetEvent("shop:buyItem")
@@ -154,31 +156,31 @@ AddEventHandler("shop:buyItem", function(itemName)
     local playerID = GetPlayerIdentifierByType(source, "license")
 
     if not itemName then
-        TriggerClientEvent("notify", src, "Item invalido")
+        TriggerClientEvent("notify", src, "Invalid Item")
         return
     end
 
     if not Items[itemName] then
-        TriggerClientEvent("notify", src, "No existe ese item")
+        TriggerClientEvent("notify", src, "Non existent Item")
         return
     end
 
     if not playerMoney[playerID] then
-        print("Jugador sin dinero")
+        print("Player with money not initialized")
         return
     end
 
     local price = Items[itemName].price
 
     if playerMoney[playerID] < price then
-        TriggerClientEvent("notify", src, "No tienes dinero suficiente")
+        TriggerClientEvent("notify", src, "You do not have enough money")
         return
     end
 
     removeMoney(playerID, price)
     addItem(playerID, itemName)
-    TriggerClientEvent("notify", src, "Has comprado " .. itemName .. " por $ " .. price)
-    TriggerClientEvent("notify", src, "Saldo actual: " .. playerMoney[playerID])
+    TriggerClientEvent("notify", src, "You have bought " .. itemName .. " for $" .. price)
+    TriggerClientEvent("notify", src, "Current balance: " .. playerMoney[playerID])
 end)
 
 RegisterNetEvent("inventory:useItem")
@@ -189,25 +191,25 @@ AddEventHandler("inventory:useItem", function(itemName, index)
     local inventory = playerInventory[playerID]
 
     if not itemData then
-        TriggerClientEvent("notify", src, "Item no existe")
+        TriggerClientEvent("notify", src, "Invalid Item")
         return
     end
 
     if not inventory then
-        print("El jugador no tiene inventario iniciado")
+        print("The player has no inventory initialized")
         return
     end
 
     local invItem = inventory[index + 1]
 
 	if not invItem then
-        TriggerClientEvent("notify", src, "No tienes ese item")
+        TriggerClientEvent("notify", src, "You do not have that Item")
 		return
 	end
 
     if itemData.type == "consumable" then
         if itemData.effect == "heal" then
-            TriggerClientEvent("notify", src, "Te has curado 50HP")
+            TriggerClientEvent("notify", src, "You have healed 50HP")
 		end
 
 		print("Usaste " .. itemName)
@@ -224,7 +226,7 @@ AddEventHandler("inventory:useItem", function(itemName, index)
     end
 
 	if itemData.type == "weapon" then
-        TriggerClientEvent("notify", src, "Equipaste ".. itemName)
+        TriggerClientEvent("notify", src, "You equipped ".. itemName)
 	end
 
 

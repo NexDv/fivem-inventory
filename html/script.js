@@ -1,7 +1,6 @@
 const inventoryGrid = document.getElementById("inventory-grid");
 const closeBtn = document.getElementById("closeBtn");
 
-// 🔹 Cerrar inventario
 closeBtn.addEventListener("click", function () {
     fetch(`https://${GetParentResourceName()}/close`, {
         method: "POST",
@@ -12,7 +11,6 @@ closeBtn.addEventListener("click", function () {
     });
 });
 
-// 🔹 Escuchar mensajes de Lua
 window.addEventListener("message", function (event) {
     const data = event.data;
 
@@ -52,5 +50,5 @@ window.addEventListener("message", function (event) {
         document.body.style.display = "none";
     }
 
-    
+
 });
