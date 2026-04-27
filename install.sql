@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS `players` (
+    `identifier` VARCHAR(50) NOT NULL PRIMARY KEY,
+    `money` INT NOT NULL DEFAULT 50000,
+    `inventory` LONGTEXT NOT NULL DEFAULT '[]'
+);
