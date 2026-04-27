@@ -16,15 +16,17 @@ local Items = {
     }
 }
 
-local playerInventory = {}
-local playerMoney = {}
+local playerData = {
+    money = 50000,
+    inventory = {}
+}
 
 local function addMoney(playerID, amount)
-    if playerID and playerMoney[playerID] then
+    if playerID and playerData[playerID].money then
         if amount > 0 then
-            playerMoney[playerID] += amount
+            playerData[playerID].money += amount
             print("Player got $" .. amount)
-            print("Updated amount of money: " .. playerMoney[playerID])
+            print("Updated amount of money: " .. playerData[playerID].money)
         else
             print("Money must be positive")
         end
@@ -34,12 +36,12 @@ local function addMoney(playerID, amount)
 end
 
 local function removeMoney(playerID, amount)
-    if playerID and playerMoney[playerID] then
+    if playerID and playerData[playerID].money then
         if amount > 0 then
-            playerMoney[playerID] -= amount
-            playerMoney[playerID] = math.max(0,playerMoney[playerID])
+            playerData[playerID].money -= amount
+            playerData[playerID].money = math.max(0,playerData[playerID].money)
             print("Player lost $" .. amount)
-            print("Updated amount of money: " .. playerMoney[playerID])
+            print("Updated amount of money: " .. playerData[playerID].money)
         else
             print("Money must be positive")
         end
@@ -49,7 +51,7 @@ local function removeMoney(playerID, amount)
 end
 
 local function addItem(playerID, itemName)
-    local inventory = playerInventory[playerID]
+    local inventory = playerData[playerID].inventory
 
     if not inventory then return end
 
@@ -95,12 +97,12 @@ end)
 
 RegisterCommand("inv", function(source)
     local playerID = GetPlayerIdentifierByType(source, "license")
-    local inventory = playerInventory[playerID]
+    local inventory = playerData[playerID].inventory
 
     if not inventory then print ("Inventory not initialized") return end
 
     print("====================")
-    print(" INVENTORY || MONEY: " .. playerMoney[playerID])
+    print(" INVENTORY || MONEY: " .. playerData[playerID].money)
     print("====================")
 
     if #inventory == 0 then print("Empty Inventory")
@@ -112,10 +114,19 @@ RegisterCommand("inv", function(source)
 
 end)
 
+RegisterCommand("init", function (source)
+    local playerID = GetPlayerIdentifierByType(source, "license")
+    playerData[playerID] = {
+    money = 50000,
+    inventory = {}
+}
+
+end)
+
 RegisterNetEvent("inventory:requestOpen")
 AddEventHandler("inventory:requestOpen", function()
     local playerID = GetPlayerIdentifierByType(source, "license")
-    local inventory = playerInventory[playerID]
+    local inventory = playerData[playerID].inventory
 
     if not inventory then return end
 
@@ -129,12 +140,14 @@ AddEventHandler('playerJoining', function()
     print("PLAYER JOINING: " .. playerID)
 
     if #result == 0 then
-        playerMoney[playerID] = 50000
-        playerInventory[playerID] = {}
-        MySQL.query.await("INSERT INTO players (identifier, money, inventory) VALUES (?, ?, ?)", {playerID, playerMoney[playerID], json.encode(playerInventory[playerID])})
+        playerData[playerID] = {
+            money = 50000,
+            inventory = {}
+        }
+        MySQL.query.await("INSERT INTO players (identifier, money, inventory) VALUES (?, ?, ?)", {playerID, playerData[playerID].money, json.encode(playerData[playerID].inventory)})
     else
-        playerMoney[playerID] = result[1].money
-        playerInventory[playerID] = json.decode(result[1].inventory)
+        playerData[playerID].money = result[1].money
+        playerData[playerID].inventory = json.decode(result[1].inventory)
     end
 end)
 
@@ -142,12 +155,12 @@ AddEventHandler('playerDropped', function()
     local playerID = GetPlayerIdentifierByType(source, "license")
     print("PLAYER DISCONNECTING: " .. playerID)
 
-    if not playerMoney[playerID] then return end
+    if not playerData[playerID].money or not playerData[playerID].inventory then return end
 
 
-    MySQL.query.await("UPDATE players SET money = ?, inventory = ? WHERE identifier = ?", {playerMoney[playerID], json.encode(playerInventory[playerID]), playerID})
-    playerMoney[playerID] = nil
-    playerInventory[playerID] = nil
+    MySQL.query.await("UPDATE players SET money = ?, inventory = ? WHERE identifier = ?", {playerData[playerID].money, json.encode(playerData[playerID].inventory), playerID})
+    playerData[playerID].money = nil
+    playerData[playerID].inventory = nil
 end)
 
 RegisterNetEvent("shop:buyItem")
@@ -165,14 +178,14 @@ AddEventHandler("shop:buyItem", function(itemName)
         return
     end
 
-    if not playerMoney[playerID] then
+    if not playerData[playerID].money then
         print("Player with money not initialized")
         return
     end
 
     local price = Items[itemName].price
 
-    if playerMoney[playerID] < price then
+    if playerData[playerID].money < price then
         TriggerClientEvent("notify", src, "You do not have enough money")
         return
     end
@@ -180,7 +193,7 @@ AddEventHandler("shop:buyItem", function(itemName)
     removeMoney(playerID, price)
     addItem(playerID, itemName)
     TriggerClientEvent("notify", src, "You have bought " .. itemName .. " for $" .. price)
-    TriggerClientEvent("notify", src, "Current balance: " .. playerMoney[playerID])
+    TriggerClientEvent("notify", src, "Current balance: " .. playerData[playerID].money)
 end)
 
 RegisterNetEvent("inventory:useItem")
@@ -188,7 +201,7 @@ AddEventHandler("inventory:useItem", function(itemName, index)
     local src = source
     local itemData = Items[itemName]
     local playerID = GetPlayerIdentifierByType(source, "license")
-    local inventory = playerInventory[playerID]
+    local inventory = playerData[playerID].inventory
 
     if not itemData then
         TriggerClientEvent("notify", src, "Invalid Item")
