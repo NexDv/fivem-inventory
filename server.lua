@@ -242,5 +242,14 @@ AddEventHandler("inventory:useItem", function(itemName, index)
         TriggerClientEvent("notify", src, "You equipped ".. itemName)
 	end
 
+end)
 
+Citizen.CreateThread(function()
+
+    while true do
+        Citizen.Wait(1200000) -- DB autosave every 20 mins 
+        for playerID, data in pairs(playerData) do
+            MySQL.query.await("UPDATE players SET money = ?, inventory = ? WHERE identifier = ?", {data.money, json.encode(data.inventory), playerID})
+        end
+    end
 end)
