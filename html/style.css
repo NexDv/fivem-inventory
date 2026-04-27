@@ -1,0 +1,78 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: none; /* importante */
+    background: rgba(0, 0, 0, 0.7);
+    font-family: Arial, sans-serif;
+    color: white;
+}
+
+/* Contenedor principal */
+#inventory-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    width: 500px;
+    background: #1e1e1e;
+    border-radius: 10px;
+    padding: 15px;
+
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* Header */
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Botón cerrar */
+#closeBtn {
+    background: rgb(255, 0, 0);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Grid */
+#inventory-grid {
+    margin-top: 15px;
+
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+/* Slot */
+.slot {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    height: 80px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 5px;
+    position: relative; /* 👈 CLAVE */
+}
+
+/* Texto item */
+.item-name {
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Cantidad */
+.item-amount {
+    position: absolute;
+    bottom: 5px;
+    right: 8px;
+    font-size: 12px;
+    opacity: 0.8;
+}

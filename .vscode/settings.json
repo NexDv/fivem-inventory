@@ -1,0 +1,19 @@
+{
+  "Lua.runtime.version": "Lua 5.4",
+  "Lua.workspace.checkThirdParty": false,
+  "Lua.diagnostics.globals": [
+    "RegisterNetEvent",
+    "AddEventHandler",
+    "TriggerServerEvent",
+    "TriggerClientEvent",
+    "RegisterCommand",
+    "print",
+    "source"
+  ],
+  "Lua.diagnostics.disable": [
+    "undefined-global",
+    "missing-parameter"
+
+  ]
+
+}
