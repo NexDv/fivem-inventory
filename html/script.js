@@ -29,6 +29,7 @@ window.addEventListener("message", function (event) {
 
             if(item){
                 slot.innerHTML = `
+                <img src="html/images/${item.name}.png">
                 <div class="item-name">${item.name}</div>
                 <div class="item-amount">x${item.amount || 1}</div>
                 `;
