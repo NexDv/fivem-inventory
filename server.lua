@@ -25,10 +25,7 @@ local Items = {
     }
 }
 
-local playerData = {
-    money = 50000,
-    inventory = createInventory()
-}
+local playerData = {}
 
 local function addMoney(playerID, amount)
     if playerID and playerData[playerID].money then
@@ -263,7 +260,8 @@ end)
 Citizen.CreateThread(function()
 
     while true do
-        Citizen.Wait(1200000) -- DB autosave every 20 mins 
+        Citizen.Wait(12000000) -- DB autosave every 20 mins 
+        print("DB AUTOSAVE...")
         for playerID, data in pairs(playerData) do
             MySQL.query.await("UPDATE players SET money = ?, inventory = ? WHERE identifier = ?", {data.money, json.encode(data.inventory), playerID})
         end
