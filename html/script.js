@@ -14,7 +14,7 @@ closeBtn.addEventListener("click", function () {
 window.addEventListener("message", function (event) {
     const data = event.data;
 
-    console.log("NUI:", data); // DEBUG
+    console.log("NUI:", JSON.stringify(data)); //DEBUG
 
     if (data.type === "open") {
         document.body.style.display = "block";
@@ -27,20 +27,22 @@ window.addEventListener("message", function (event) {
             const slot = document.createElement("div");
             slot.classList.add("slot");
 
-            slot.innerHTML = `
+            if(item){
+                slot.innerHTML = `
                 <div class="item-name">${item.name}</div>
                 <div class="item-amount">x${item.amount || 1}</div>
-            `;
+                `;
+                slot.addEventListener("click", function() {
+                    fetch(`https://${GetParentResourceName()}/useItem`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ item: item.name, index})
+                    });
+                })
+            }
 
-            slot.addEventListener("click", function() {
-                fetch(`https://${GetParentResourceName()}/useItem`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ item: item.name, index})
-                });
-            })
 
             inventoryGrid.appendChild(slot);
         });

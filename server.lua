@@ -246,7 +246,7 @@ AddEventHandler("inventory:useItem", function(itemName, index)
 		invItem.amount = invItem.amount - 1
 
 		if invItem.amount <= 0 then
-			table.remove(inventory, index + 1)
+            inventory[index+1] = false
 		end
 
         TriggerClientEvent("inventory:open", src, inventory)
